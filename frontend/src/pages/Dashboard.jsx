@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import RoomCanvas from '../components/RoomCanvas'
 
 function Dashboard({ token, setToken }) {
   const navigate = useNavigate()
@@ -10,12 +11,14 @@ function Dashboard({ token, setToken }) {
   }
 
   return (
-    <div style={{ padding: '20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1>AI Home Designer</h1>
-        <button onClick={handleLogout}>Logout</button>
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ padding: '10px 20px', background: '#2c3e50', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2 style={{ margin: 0 }}>AI Home Designer</h2>
+        <button onClick={handleLogout} style={{ padding: '8px 16px', background: '#e74c3c', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+          Logout
+        </button>
       </div>
-      <p>Welcome! Your design canvas will appear here soon.</p>
+      <RoomCanvas />
     </div>
   )
 }
