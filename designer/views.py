@@ -81,3 +81,12 @@ def ai_suggest(request):
     response_text = chat_completion.choices[0].message.content
     response_data = json.loads(response_text)
     return Response(response_data)
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def get_or_create_project(request):
+    project, created = Project.objects.get_or_create(
+        user=request.user,
+        defaults={'name': 'My Home'}
+    )
+    return Response({'id': project.id, 'name': project.name})
