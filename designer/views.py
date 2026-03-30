@@ -6,6 +6,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+import os
 
 class ProjectViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
@@ -43,3 +44,40 @@ def register(request):
 
     user = User.objects.create_user(username=username, password=password, email=email)
     return Response({'message': 'User created successfully'}, status=status.HTTP_201_CREATED)
+
+from groq import Groq
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def ai_suggest(request):
+    user_message = request.data.get('message')
+    
+    client = Groq(api_key=os.getenv('GROQ_API_KEY'))
+    
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {
+                "role": "system",
+                "content": """You are an interior design AI assistant. 
+                When user describes what they want, suggest furniture items in JSON format like this:
+                {
+                    "suggestions": [
+                        {"name": "Armchair", "type": "chair", "width": 60, "height": 60, "color": "#e74c3c", "description": "Comfortable armchair"},
+                        {"name": "Coffee Table", "type": "table", "width": 80, "height": 50, "color": "#e67e22", "description": "Modern coffee table"}
+                    ],
+                    "advice": "I suggest placing the armchair near the window for natural light"
+                }
+                Only respond with valid JSON, nothing else."""
+            },
+            {
+                "role": "user",
+                "content": user_message
+            }
+        ],
+        model="llama-3.3-70b-versatile",
+    )
+    
+    import json
+    response_text = chat_completion.choices[0].message.content
+    response_data = json.loads(response_text)
+    return Response(response_data)

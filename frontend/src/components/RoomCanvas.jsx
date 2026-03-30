@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { Stage, Layer, Rect, Text, Transformer } from 'react-konva'
 import { useState, useRef, useEffect } from 'react'
 
@@ -8,6 +9,9 @@ function RoomCanvas() {
   const [furniture, setFurniture] = useState([])
   const [selectedId, setSelectedId] = useState(null)
   const [tool, setTool] = useState('select')
+  const [aiMessage, setAiMessage] = useState('')
+  const [aiResponse, setAiResponse] = useState(null)
+  const [aiLoading, setAiLoading] = useState(false)
   const transformerRef = useRef()
   const stageRef = useRef()
 
@@ -67,7 +71,21 @@ function RoomCanvas() {
     setFurniture(furniture.filter(f => f.id !== selectedId))
     setSelectedId(null)
   }
-
+  const askAI = async () => {
+    setAiLoading(true)
+    try {
+      const token = localStorage.getItem('token')
+      const res = await axios.post(
+        'http://127.0.0.1:8000/api/ai/suggest/',
+        { message: aiMessage },
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      setAiResponse(res.data)
+    } catch (err) {
+      console.error(err)
+    }
+    setAiLoading(false)
+  }
   return (
     <div>
       <div style={{ padding: '10px', background: '#f5f5f5', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
@@ -134,9 +152,43 @@ function RoomCanvas() {
             />
           ))}
         </Layer>
-      </Stage>
+        </Stage>
+
+<div style={{ padding: '10px', background: '#ecf0f1', borderTop: '1px solid #ddd', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+  <div style={{ flex: 1 }}>
+    <input
+      placeholder="Describe what you need... e.g. I need a comfortable chair near the window"
+      value={aiMessage}
+      onChange={e => setAiMessage(e.target.value)}
+      style={{ width: '100%', padding: '8px', marginBottom: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
+    />
+    <button
+      onClick={askAI}
+      disabled={aiLoading}
+      style={{ padding: '8px 16px', background: '#8e44ad', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+    >
+      {aiLoading ? 'Thinking...' : 'Ask AI'}
+    </button>
+  </div>
+  {aiResponse && (
+    <div style={{ flex: 1, background: 'white', padding: '10px', borderRadius: '4px', border: '1px solid #ddd' }}>
+      <p style={{ margin: '0 0 8px', fontWeight: 'bold' }}>AI Advice:</p>
+      <p style={{ margin: '0 0 8px' }}>{aiResponse.advice}</p>
+      <p style={{ margin: '0 0 4px', fontWeight: 'bold' }}>Suggestions:</p>
+      {aiResponse.suggestions && aiResponse.suggestions.map((s, i) => (
+        <button
+          key={i}
+          onClick={() => setFurniture([...furniture, { id: Date.now(), x: 100, y: 100, width: s.width, height: s.height, fill: s.color, name: s.name }])}
+          style={{ margin: '4px', padding: '6px 10px', background: s.color, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+        >
+          + {s.name}
+        </button>
+      ))}
     </div>
-  )
+  )}
+</div>
+</div>
+)
 }
 
 export default RoomCanvas
