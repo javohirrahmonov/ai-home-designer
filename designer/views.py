@@ -51,32 +51,41 @@ from groq import Groq
 @permission_classes([permissions.IsAuthenticated])
 def ai_suggest(request):
     user_message = request.data.get('message')
-    
+    existing_furniture = request.data.get('existing_furniture', [])
+    existing_rooms = request.data.get('existing_rooms', [])
+
+    context = f"""
+Current room layout:
+Rooms: {existing_rooms}
+Existing furniture: {existing_furniture}
+Canvas is 800x600 pixels.
+"""
+
     client = Groq(api_key=os.getenv('GROQ_API_KEY'))
-    
+
     chat_completion = client.chat.completions.create(
         messages=[
             {
                 "role": "system",
-                "content": """You are an interior design AI assistant. 
+                "content": """You are an interior design AI assistant.
                 When user describes what they want, suggest furniture items in JSON format like this:
                 {
                     "suggestions": [
-                        {"name": "Armchair", "type": "chair", "width": 60, "height": 60, "color": "#e74c3c", "description": "Comfortable armchair"},
-                        {"name": "Coffee Table", "type": "table", "width": 80, "height": 50, "color": "#e67e22", "description": "Modern coffee table"}
+                        {"name": "Armchair", "type": "chair", "width": 60, "height": 60, "color": "#e74c3c", "x": 150, "y": 200, "description": "Comfortable armchair near the bed"}
                     ],
-                    "advice": "I suggest placing the armchair near the window for natural light"
+                    "advice": "I placed the armchair 20px to the right of the bed"
                 }
+                Use the canvas context to calculate correct x and y coordinates based on existing furniture positions.
                 Only respond with valid JSON, nothing else."""
             },
             {
                 "role": "user",
-                "content": user_message
+                "content": f"{context}\n\nUser request: {user_message}"
             }
         ],
         model="llama-3.3-70b-versatile",
     )
-    
+
     import json
     response_text = chat_completion.choices[0].message.content
     response_data = json.loads(response_text)

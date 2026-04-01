@@ -118,10 +118,45 @@ function RoomCanvas() {
       const token = localStorage.getItem('token')
       const res = await axios.post(
         'http://127.0.0.1:8000/api/ai/suggest/',
-        { message: aiMessage },
+        {
+          message: aiMessage,
+          existing_furniture: furniture.map(f => ({
+            name: f.name,
+            x: f.x,
+            y: f.y,
+            width: f.width,
+            height: f.height
+          })),
+          existing_rooms: rooms.map(r => ({
+            name: r.name,
+            x: r.x,
+            y: r.y,
+            width: r.width,
+            height: r.height
+          }))
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       )
       setAiResponse(res.data)
+  
+      const autoPlaceWords = ['put', 'add', 'place', 'insert', 'bring']
+      const shouldAutoPlace = autoPlaceWords.some(word =>
+        aiMessage.toLowerCase().includes(word)
+      )
+  
+      if (shouldAutoPlace && res.data.suggestions && res.data.suggestions.length > 0) {
+        const newItems = res.data.suggestions.map((s, i) => ({
+          id: Date.now() + i,
+          x: s.x || 100 + (i * 60),
+          y: s.y || 100 + (i * 60),
+          width: s.width,
+          height: s.height,
+          fill: s.color,
+          name: s.name,
+          type: 'furniture'
+        }))
+        setFurniture(prev => [...prev, ...newItems])
+      }
     } catch (err) {
       console.error(err)
     }
