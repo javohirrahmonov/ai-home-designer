@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import ProjectViewSet, RoomViewSet, FurnitureItemViewSet, register, ai_suggest, get_or_create_project
+from .views import ProjectViewSet, RoomViewSet, FurnitureItemViewSet, register, ai_suggest, get_or_create_project, save_design
 
 router = DefaultRouter()
 router.register(r'projects', ProjectViewSet, basename='project')
@@ -12,4 +12,5 @@ urlpatterns = [
     path('register/', register, name='register'),
     path('ai/suggest/', ai_suggest, name='ai_suggest'),
     path('project/default/', get_or_create_project, name='get_or_create_project'),
+    path('design/save/', save_design, name='save_design'),
 ]

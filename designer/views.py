@@ -85,8 +85,43 @@ def ai_suggest(request):
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def get_or_create_project(request):
-    project, created = Project.objects.get_or_create(
-        user=request.user,
-        defaults={'name': 'My Home'}
-    )
+    project = Project.objects.filter(user=request.user).first()
+    if not project:
+        project = Project.objects.create(user=request.user, name='My Home')
     return Response({'id': project.id, 'name': project.name})
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def save_design(request):
+    project = Project.objects.filter(user=request.user).first()
+    if not project:
+        project = Project.objects.create(user=request.user, name='My Home')
+    
+    # Delete old rooms and furniture
+    Room.objects.filter(project=project).delete()
+    
+    # Save new rooms and furniture
+    rooms_data = request.data.get('rooms', [])
+    furniture_data = request.data.get('furniture', [])
+    
+    for room in rooms_data:
+        new_room = Room.objects.create(
+            project=project,
+            name=room['name'],
+            width=room['width'],
+            height=room['height'],
+            x=room['x'],
+            y=room['y']
+        )
+        for item in furniture_data:
+            FurnitureItem.objects.create(
+                room=new_room,
+                name=item['name'],
+                x=item['x'],
+                y=item['y'],
+                width=item['width'],
+                height=item['height'],
+                color=item['fill']
+            )
+    
+    return Response({'message': 'Design saved!'})

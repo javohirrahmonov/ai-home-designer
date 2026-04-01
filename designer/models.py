@@ -15,6 +15,8 @@ class Room(models.Model):
     name = models.CharField(max_length=200)
     width = models.FloatField()
     height = models.FloatField()
+    x = models.FloatField(default=50)
+    y = models.FloatField(default=50)
 
     def __str__(self):
         return self.name
