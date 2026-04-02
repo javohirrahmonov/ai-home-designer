@@ -68,15 +68,32 @@ Canvas is 800x600 pixels.
             {
                 "role": "system",
                 "content": """You are an interior design AI assistant.
-                When user describes what they want, suggest furniture items in JSON format like this:
+                Respond ONLY with valid JSON, nothing else, no markdown, no explanation outside JSON.
+
+                Format:
                 {
-                    "suggestions": [
-                        {"name": "Armchair", "type": "chair", "width": 60, "height": 60, "color": "#e74c3c", "x": 150, "y": 200, "description": "Comfortable armchair near the bed"}
-                    ],
-                    "advice": "I placed the armchair 20px to the right of the bed"
+                    "action": "advice",
+                    "advice": "your helpful advice text here",
+                    "suggestions": [],
+                    "replace_name": "",
+                    "deletions": [],
+                    "room_changes": []
                 }
-                Use the canvas context to calculate correct x and y coordinates based on existing furniture positions.
-                Only respond with valid JSON, nothing else."""
+
+                Action types:
+                - "advice": user is asking for recommendations. Fill suggestions with options but DO NOT auto-place. User will click buttons to add.
+                - "add": user says put/place/bring something. Fill suggestions with items to place on canvas automatically.
+                - "replace": user says change/replace/resize existing item. Set replace_name to the EXACT item name. Fill suggestions with the new version.
+                - "delete": user says remove/delete. Fill deletions array with exact item names to remove.
+                - "room": user wants to resize the room. Fill room_changes array.
+
+                Important:
+                - suggestions items need: name, width, height, color (hex), x, y
+                - For "advice" action, x and y don't matter
+                - For "add" action, calculate x and y based on existing furniture positions
+                - deletions is a list of strings: ["Chair", "Bed"]
+                - Only ONE action per response
+                - Only respond with pure JSON"""
             },
             {
                 "role": "user",
