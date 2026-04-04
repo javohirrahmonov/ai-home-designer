@@ -23,17 +23,17 @@ function RoomCanvas() {
       try {
         const token = localStorage.getItem('token')
         const res = await axios.post(
-          'http://127.0.0.1:8000/api/project/default/',
+          'https://ai-homedesigner.onrender.com/api/project/default/',
           {},
           { headers: { Authorization: `Bearer ${token}` } }
         )
         setProjectId(res.data.id)
         const roomsRes = await axios.get(
-          'http://127.0.0.1:8000/api/rooms/',
+          'https://ai-homedesigner.onrender.com/api/rooms/',
           { headers: { Authorization: `Bearer ${token}` } }
         )
         const furnitureRes = await axios.get(
-          'http://127.0.0.1:8000/api/furniture/',
+          'https://ai-homedesigner.onrender.com/api/furniture/',
           { headers: { Authorization: `Bearer ${token}` } }
         )
         setRooms(roomsRes.data.map(room => ({
@@ -116,7 +116,7 @@ function RoomCanvas() {
     try {
       const token = localStorage.getItem('token')
       const res = await axios.post(
-        'http://127.0.0.1:8000/api/ai/suggest/',
+        'https://ai-homedesigner.onrender.com/api/ai/suggest/',
         {
           message: currentMessage,
           existing_furniture: furniture.map(f => ({ name: f.name, x: f.x, y: f.y, width: f.width, height: f.height })),
@@ -181,7 +181,7 @@ function RoomCanvas() {
     try {
       const token = localStorage.getItem('token')
       await axios.post(
-        'http://127.0.0.1:8000/api/design/save/',
+        'https://ai-homedesigner.onrender.com/api/design/save/',
         { rooms, furniture },
         { headers: { Authorization: `Bearer ${token}` } }
       )
